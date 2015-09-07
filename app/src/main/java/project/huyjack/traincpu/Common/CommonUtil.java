@@ -1,34 +1,53 @@
-package project.huyjack.traincpu.Manager;
+package project.huyjack.traincpu.Common;
 
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 /**
  * Created by AnhHuy on 5/19/2015.
  */
-public class Common {
-    public String ReadCommand(String cmd){
+public class CommonUtil {
+
+    public static final String TAG = CommonUtil.class.getName();
+
+    public String readCommand(String cmd) {
         try {
             RandomAccessFile reader = new RandomAccessFile(cmd, "r");
             return reader.readLine();
-        }
-        catch (Exception e){
-            Log.e("Error: ", e.toString());
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
             return "error";
         }
+    }
+
+
+    public Boolean execCommand(String command) {
+        try {
+            Runtime rt = Runtime.getRuntime();
+            Process process = rt.exec("su");
+            DataOutputStream os = new DataOutputStream(process.getOutputStream());
+
+            os.writeBytes(command + "\n");
+            os.flush();
+
+            os.writeBytes("exit\n");
+            os.flush();
+            process.waitFor();
+        } catch (IOException e) {
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
+        return true;
     }
 
     public void writeToFile(String data, String fileName) {
@@ -41,14 +60,13 @@ public class Common {
             out.write(data);
 
             out.close();
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "File write failed: " + e.toString());
         }
     }
 
     public ArrayList<String> readFromFile(String fileName) {
-        ArrayList<String> ret  = new ArrayList<String>();
+        ArrayList<String> ret = new ArrayList<String>();
         try {
             File sdcard = Environment.getExternalStorageDirectory();
             File file = new File("storage/sdcard1/" + fileName);
@@ -58,8 +76,8 @@ public class Common {
             while ((line = br.readLine()) != null) {
                 ret.add(line + "\n");
             }
-            br.close() ;
-        }catch (IOException e) {
+            br.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -67,8 +85,7 @@ public class Common {
     }
 
 
-
-    public void deleteFile(){
+    public void deleteFile() {
         File file = new File("storage/sdcard1/data.txt");
         boolean deleted = file.delete();
     }

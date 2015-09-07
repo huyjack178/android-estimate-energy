@@ -1,11 +1,9 @@
 package project.huyjack.traincpu;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Handler;
-import android.os.PowerManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,17 +11,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import junit.framework.Test;
+
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import project.huyjack.traincpu.Manager.BatteryManager;
-import project.huyjack.traincpu.Manager.Common;
+import project.huyjack.traincpu.Listener.GenerateModelListener;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements GenerateModelListener {
+    public static final String TAG = MainActivity.class.getName();
     private TextView txtTimeout;
     private Button btnGenModel, btnTest;
-    private  PowerManager.WakeLock wakeLock;
+    private ArrayList<TrainData> trainingDatas = null;
+    private MultipleLinearRegression regression = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,129 +34,72 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         //Init Control
-        txtTimeout = (EditText)findViewById(R.id.txtTimeout);
-        btnGenModel = (Button)findViewById(R.id.btnGenModel);
-        btnTest = (Button)findViewById(R.id.btnTest);
-       // Intent intent = new Intent(this, GenerateModelService.class);
-        //startService(intent);
+        txtTimeout = (EditText) findViewById(R.id.txtTimeout);
+        btnGenModel = (Button) findViewById(R.id.btnGenModel);
+        btnTest = (Button) findViewById(R.id.btnTest);
+        trainingDatas = new ArrayList<TrainData>();
+
         handleBtnOnclick();
     }
 
-    private void handleBtnOnclick(){
+    private void handleBtnOnclick() {
         btnGenModel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Context context = v.getContext();
-                //Start Service
-                Intent intent = new Intent(MainActivity.this, GenerateModelService.class);
-                MainActivity.this.startService(intent);
-
-                //Stop Service
-                Timer timer = new Timer ();
-                TimerTask hourlyTask = new TimerTask () {
-                    @Override
-                    public void run () {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                //Generate Model
-                                Training train = new Training(0);
-                                TrainingData data = train.GetData("data.txt");
-                                MultipleLinearRegression regression = new MultipleLinearRegression(data.component, data.power);
-                                new Common().writeToFile(regression.beta(0) + "," + regression.beta(1) + ","
-                                        + regression.beta(2) + "\n", "model.txt");
-                                MainActivity.this.stopService(new Intent(MainActivity.this, GenerateModelService.class));
-                            }
-                        });
-                    }
-                };
-                timer.schedule(hourlyTask, Long.parseLong(txtTimeout.getText().toString()) * 1000);
-            }
-        });
-
-        btnTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                BatteryManager batteryManager = new BatteryManager();
-                final int  batteryLevelIn = batteryManager.getBatteryLevel();
-                Training training = new Training(Integer.parseInt(txtTimeout.getText().toString()));
-                Thread thread = new Thread(training);
-                training.run();
-                //Start Service
-//                Intent intent = new Intent(MainActivity.this, TestService.class);
-//                MainActivity.this.startService(intent);
-
-                //Call Task
-                callAsynchronousTask();
-
-                //Stop Service
-                Timer timer = new Timer ();
-                TimerTask hourlyTask = new TimerTask () {
-                    @Override
-                    public void run () {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-
-                                Training train = new Training(0);
-                                TrainingData data = train.GetData("data.txt");
-                                Experiment experiment = new Experiment();
-                                double totalPower = experiment.EstimateTotalPower(data.component);
-
-                                BatteryManager batteryManager1 = new BatteryManager();
-                                int batteryLevelOut = batteryManager1.getBatteryLevel();
-                                int disBattery = batteryLevelIn - batteryLevelOut;
-
-                                new Common().writeToFile(txtTimeout.getText().toString() + ": " + totalPower + ", " + disBattery + "\n","test.txt");
-
-                                MainActivity.this.stopService(new Intent(MainActivity.this, TestService.class));
-                            }
-                        });
-                    }
-                };
-                timer.schedule(hourlyTask, Long.parseLong(txtTimeout.getText().toString()) * 1000);
+                generateModel();
             }
         });
     }
 
-    @Override
-    protected void onStop() {
-        stopService(new Intent(this,GenerateModelService.class));
-        stopService(new Intent(this,TestService.class));
-        super.onStop();
-    }
+    private void generateModel() {
+        final Timer startTimer = new Timer();
+        EnergyEstimator estimator = new EnergyEstimator(startTimer);
+        estimator.runTrainingData(MainActivity.this);
 
-    private static final void doWork() {
-        long limit = 2000000000;
-        double sum = 0;
-        for (long m = 0 ; m < limit ; m++) {
-            sum = (double) (1 / m);
-        }
-    }
+        TestCPU testCPU = new TestCPU();
+        testCPU.execute(0);
 
-    public void callAsynchronousTask() {
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask() {
+        final Timer endTimer = new Timer();
+        TimerTask hourlyTask = new TimerTask() {
             @Override
             public void run() {
-                handler.post(new Runnable() {
+                runOnUiThread(new Runnable() {
                     public void run() {
-                        try {
-
-                            double i = 1.0;
-                            double sum = 0.0;
-                            while (i < 1000000) {
-                                sum = sum + 1/i;
-                                i = i + 1;
-                            }
-                        } catch (Exception e) {
-                            // TODO Auto-generated catch block
+                        //Generate Model
+                        TrainData data = new TrainData(trainingDatas.size(), 3);
+                        for (int i = 0; i < trainingDatas.size(); i++) {
+                            data.component[i][0] = 1;
+                            data.component[i][1] = trainingDatas.get(i).getFrequency();
+                            data.component[i][2] = trainingDatas.get(i).getCPUUsage();
+                            data.power[i] = trainingDatas.get(i).getPower();
                         }
+                        regression = new MultipleLinearRegression(data.component, data.power);
+                        Log.e(TAG, regression.beta(0) + "," + regression.beta(1) + ","
+                                + regression.beta(2));
+                        startTimer.cancel();
+                        startTimer.purge();
+                        endTimer.cancel();
+                        endTimer.purge();
                     }
                 });
             }
+
         };
-        timer.schedule(doAsynchronousTask, 0, 1000); //execute in every 2000 ms
+        endTimer.schedule(hourlyTask, Long.parseLong(txtTimeout.getText().toString()) * 1000);
     }
+
+    class TestCPU extends AsyncTask<Integer, String, String>{
+        @Override
+        protected String doInBackground(Integer... params) {
+            long limit = 200000000;
+            double sum = 0;
+            for (long m = 1; m < limit; m++) {
+                sum = (double) (1 / m);
+            }
+            return null;
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -175,5 +121,13 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onAnalysisListener(TrainData trainingData) {
+        trainingDatas.add(trainingData);
+        Log.e(TAG, trainingData.getFrequency() + "");
+        Log.e(TAG, trainingDatas.size() + "");
+
     }
 }

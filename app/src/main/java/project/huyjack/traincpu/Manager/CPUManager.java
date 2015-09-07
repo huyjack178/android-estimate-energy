@@ -3,33 +3,52 @@ package project.huyjack.traincpu.Manager;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
+import project.huyjack.traincpu.Common.CommonUtil;
+
 /**
  * Created by AnhHuy on 5/19/2015.
  */
 public class CPUManager {
+    private static final String TAG = CPUManager.class.getName();
 
-    private static String CPU_SCALING_FREQ_AVAILABLE = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies";
-    private static String ERROR = "error";
+    private static final String CPU_CURRENT_FREQUENCY = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq";
+    private static final String CPU0_CPUFREQ_SCALING_GOVERNOR = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor";
+    private static final String CPU1_CPUFREQ_SCALING_GOVERNOR = "/sys/devices/system/cpu/cpu1/cpufreq/scaling_governor";
+    private static final String CPU2_CPUFREQ_SCALING_GOVERNOR = "/sys/devices/system/cpu/cpu2/cpufreq/scaling_governor";
+    private static final String CPU3_CPUFREQ_SCALING_GOVERNOR = "/sys/devices/system/cpu/cpu3/cpufreq/scaling_governor";
+    private static final String CPU0_CPUFREQ_CPUINFO_MIN_FREQ = "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq";
+    private static final String CPU1_CPUFREQ_CPUINFO_MIN_FREQ = "/sys/devices/system/cpu/cpu1/cpufreq/cpuinfo_min_freq";
+    private static final String CPU2_CPUFREQ_CPUINFO_MIN_FREQ = "/sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_min_freq";
+    private static final String CPU3_CPUFREQ_CPUINFO_MIN_FREQ = "/sys/devices/system/cpu/cpu3/cpufreq/cpuinfo_min_freq";
+    private static final String CPU0_CPUFREQ_SCALING_SETSPEED = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed";
+    private static final String CPU1_CPUFREQ_SCALING_SETSPEED = "/sys/devices/system/cpu/cpu1/cpufreq/scaling_setspeed";
+    private static final String CPU2_CPUFREQ_SCALING_SETSPEED = "/sys/devices/system/cpu/cpu2/cpufreq/scaling_setspeed";
+    private static final String CPU3_CPUFREQ_SCALING_SETSPEED = "/sys/devices/system/cpu/cpu3/cpufreq/scaling_setspeed";
+    private static final String GOV_USERSPACE = "userspace";
+    private static final String GOV_PERFORMANCE = "performance";
+    private static final String CPU_SCALING_FREQ_AVAILABLE = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies";
+    private static final String ERROR = "error";
 
-    public ArrayList<String> FREQUENCY = new ArrayList<String>();
+    private ArrayList<String> FREQUENCY = new ArrayList<String>();
 
-    public CPUManager(){
-        GetScalingFrequency();
 
+    private CommonUtil commonUtil = null;
+    public CPUManager() {
+        initScalingFrequency();
+        commonUtil = new CommonUtil();
     }
 
-    private void GetScalingFrequency(){
-        String cpuScalingFreq = new Common().ReadCommand(CPU_SCALING_FREQ_AVAILABLE);
-        if (cpuScalingFreq != ERROR){
+    private void initScalingFrequency() {
+        String cpuScalingFreq = new CommonUtil().readCommand(CPU_SCALING_FREQ_AVAILABLE);
+        if (cpuScalingFreq != ERROR) {
             int first = 0;
-            for (int i = 0; i < cpuScalingFreq.length() ; i++){
-                if (cpuScalingFreq.charAt(i) == ' '){
+            for (int i = 0; i < cpuScalingFreq.length(); i++) {
+                if (cpuScalingFreq.charAt(i) == ' ') {
                     FREQUENCY.add(cpuScalingFreq.substring(first, i));
                     first = i + 1;
                 }
@@ -37,35 +56,50 @@ public class CPUManager {
         }
     }
 
-    public String GetCurrentFrequency(){
-        Common cmn = new Common();
-        return cmn.ReadCommand("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq");
+    public String GetCurrentFrequency() {
+        CommonUtil cmn = new CommonUtil();
+        return cmn.readCommand(CPU_CURRENT_FREQUENCY);
     }
 
-    public void SetCPUFrequencyRandom(){
-        Random random = new Random() ;
+    public void SetCPUFrequencyRandom() {
+        Random random = new Random();
         int randomNumber = random.nextInt(FREQUENCY.size());
-        Log.e("randCPU: ", randomNumber + "");
+        Log.e(TAG, "random freq:" + FREQUENCY.get(randomNumber));
         this.SetCPUFrequency(FREQUENCY.get(randomNumber));
 
     }
-    public void SetCPUFrequency(String freq){
+
+    public void SetCPUFrequency(String freq) {
         //Set CPU Govenor to userspace
-        this.execCommands("echo userspace > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
-        this.execCommands("echo userspace > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor");
+        commonUtil.execCommand("echo " + GOV_USERSPACE + " > " + CPU0_CPUFREQ_SCALING_GOVERNOR);
+        commonUtil.execCommand("echo " + GOV_USERSPACE + " > " + CPU1_CPUFREQ_SCALING_GOVERNOR);
+        commonUtil.execCommand("echo " + GOV_USERSPACE + " > " + CPU2_CPUFREQ_SCALING_GOVERNOR);
+        commonUtil.execCommand("echo " + GOV_USERSPACE + " > " + CPU3_CPUFREQ_SCALING_GOVERNOR);
         //Set CPU Frequency
-        this.execCommands("echo \"" + freq + "\" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed");
-        this.execCommands("echo \"" + freq + "\" > /sys/devices/system/cpu/cpu1/cpufreq/scaling_setspeed");
+        //cpuinfo_min_freq
+        commonUtil.execCommand("echo \"" + 300000 + "\" > " + CPU0_CPUFREQ_CPUINFO_MIN_FREQ);
+        commonUtil.execCommand("echo \"" + 300000 + "\" > " + CPU1_CPUFREQ_CPUINFO_MIN_FREQ);
+        commonUtil.execCommand("echo \"" + 300000 + "\" > " + CPU2_CPUFREQ_CPUINFO_MIN_FREQ);
+        commonUtil.execCommand("echo \"" + 300000 + "\" > " + CPU3_CPUFREQ_CPUINFO_MIN_FREQ);
+
+
+        commonUtil.execCommand("echo \"" + freq + "\" > " + CPU0_CPUFREQ_SCALING_SETSPEED);
+        commonUtil.execCommand("echo \"" + freq + "\" > " + CPU1_CPUFREQ_SCALING_SETSPEED);
+        commonUtil.execCommand("echo \"" + freq + "\" > " + CPU2_CPUFREQ_SCALING_SETSPEED);
+        commonUtil.execCommand("echo \"" + freq + "\" > " + CPU3_CPUFREQ_SCALING_SETSPEED);
     }
 
-    public void SetDefaultCPU(){
-        this.execCommands("echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
-        this.execCommands("echo ondemand > /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor");
+    public void SetDefaultCPU() {
+        commonUtil.execCommand("echo " + GOV_PERFORMANCE + " > " + CPU0_CPUFREQ_SCALING_GOVERNOR);
+        commonUtil.execCommand("echo " + GOV_PERFORMANCE + " > " + CPU1_CPUFREQ_SCALING_GOVERNOR);
+        commonUtil.execCommand("echo " + GOV_PERFORMANCE + " > " + CPU2_CPUFREQ_SCALING_GOVERNOR);
+        commonUtil.execCommand("echo " + GOV_PERFORMANCE + " > " + CPU3_CPUFREQ_SCALING_GOVERNOR);
     }
+
     /*
-        * @return integer Array with 4 elements: user, system, idle and other cpu
-*         usage in percentage.
-*/
+     * @return integer Array with 4 elements: user, system, idle and other cpu
+     * usage in percentage.
+     */
     public int[] GetCpuUsageStatistic() {
 
         String tempString = executeTop();
@@ -88,29 +122,6 @@ public class CPUManager {
         }
         return cpuUsageAsInt;
     }
-
-
-
-    private Boolean execCommands(String command) {
-        try {
-            Runtime rt = Runtime.getRuntime();
-            Process process = rt.exec("su");
-            DataOutputStream os = new DataOutputStream(process.getOutputStream());
-
-            os.writeBytes(command + "\n");
-            os.flush();
-
-            os.writeBytes("exit\n");
-            os.flush();
-            process.waitFor();
-        } catch (IOException e) {
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
-        return true;
-    }
-
 
 
     private String executeTop() {
