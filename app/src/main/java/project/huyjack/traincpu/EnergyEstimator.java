@@ -21,30 +21,28 @@ public class EnergyEstimator {
     private CPUManager cpuManager = null;
     private ScreenManager screenManager = null;
     private BatteryManager batteryManager = null;
-
+    private static int current = 0;
+    private static int voltage = 0;
     public EnergyEstimator(Timer timer) {
         this.timer = timer;
         cpuManager = new CPUManager();
         screenManager = new ScreenManager();
         batteryManager = new BatteryManager();
     }
-
-    public static double getWattBattery(){
-        BatteryManager batteryManager = new BatteryManager();
+    public static void readBatteryStatus() {
         int current = batteryManager.getBatteryCurrent();
         int vol = batteryManager.getBatteryVoltage();
-        double watt = ((current) * (vol)) / 10e12;
-        return watt;
+    }
+    public static double getWattBattery(){
+        return = ((current) * (vol)) / 10e12;
     }
 
     public static int getAmpeBattery(){
-        BatteryManager batteryManager = new BatteryManager();
-        return batteryManager.getBatteryCurrent();
+        return current;
     }
 
     public static int getVoltBattery(){
-        BatteryManager batteryManager = new BatteryManager();
-        return batteryManager.getBatteryVoltage();
+        return voltage;
     }
 
     public void runTrainingData(final GenerateModelListener generateModelListener) {
