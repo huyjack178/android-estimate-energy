@@ -29,6 +29,24 @@ public class EnergyEstimator {
         batteryManager = new BatteryManager();
     }
 
+    public static double getWattBattery(){
+        BatteryManager batteryManager = new BatteryManager();
+        int current = batteryManager.getBatteryCurrent();
+        int vol = batteryManager.getBatteryVoltage();
+        double watt = ((current) * (vol)) / 10e12;
+        return watt;
+    }
+
+    public static int getAmpeBattery(){
+        BatteryManager batteryManager = new BatteryManager();
+        return batteryManager.getBatteryCurrent();
+    }
+
+    public static int getVoltBattery(){
+        BatteryManager batteryManager = new BatteryManager();
+        return batteryManager.getBatteryVoltage();
+    }
+
     public void runTrainingData(final GenerateModelListener generateModelListener) {
         final Handler handler = new Handler();
         TimerTask timerTask = new TimerTask() {

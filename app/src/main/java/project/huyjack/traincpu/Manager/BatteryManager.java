@@ -29,6 +29,8 @@ public class BatteryManager {
     }
 
     public double getBatteryCapacity(Context ct) {
+
+
         Object mPowerProfile_ = null;
         double batteryCapacity = 0;
         final String POWER_PROFILE_CLASS = POWER_PROFILE;

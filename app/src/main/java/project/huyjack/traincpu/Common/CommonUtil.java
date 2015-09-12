@@ -50,10 +50,10 @@ public class CommonUtil {
         return true;
     }
 
-    public void writeToFile(String data, String fileName) {
+    public static void writeToFile(String data, String fileName) {
         try {
 
-            File myDir = new File("storage/sdcard1/");
+            File myDir = new File("storage/");
             myDir.mkdirs();
             FileWriter out = new FileWriter(new File(myDir, fileName), true);
 

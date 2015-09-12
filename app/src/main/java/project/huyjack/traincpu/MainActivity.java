@@ -1,7 +1,12 @@
 package project.huyjack.traincpu;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -15,14 +20,19 @@ import junit.framework.Test;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Handler;
 
+import project.huyjack.traincpu.Common.CommonUtil;
 import project.huyjack.traincpu.Listener.GenerateModelListener;
 
 
 public class MainActivity extends Activity implements GenerateModelListener {
     public static final String TAG = MainActivity.class.getName();
+    private static final String FILE_NAME = "data.txt";
     private TextView txtTimeout;
     private Button btnGenModel, btnTest;
     private ArrayList<TrainData> trainingDatas = null;
@@ -38,9 +48,69 @@ public class MainActivity extends Activity implements GenerateModelListener {
         btnGenModel = (Button) findViewById(R.id.btnGenModel);
         btnTest = (Button) findViewById(R.id.btnTest);
         trainingDatas = new ArrayList<TrainData>();
+        this.registerReceiver(this.mBatteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
         handleBtnOnclick();
     }
+
+
+    private BroadcastReceiver mBatteryReceiver = new BroadcastReceiver() {
+        final android.os.Handler handler = new android.os.Handler();
+        final List<Double> watts = new LinkedList<Double>();
+        final List<Double> ampes = new LinkedList<Double>();
+        final List<Double> volts = new LinkedList<Double>();
+
+        Timer timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        try {
+                            Double watt = EnergyEstimator.getWattBattery();
+                            Double ampe = EnergyEstimator.getAmpeBattery() * 1.0;
+                            Double voltage = EnergyEstimator.getVoltBattery()* 1.0;
+                            Log.e(TAG, watt + " " + ampe / 1000000 + " " + voltage / 1000000);
+                            watts.add(watt);
+                            ampes.add(ampe);
+                            volts.add(voltage);
+                        } catch (Exception e) {
+                            Log.e(TAG, e.toString());
+                        }
+                    }
+                });
+            }
+        };
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int level = intent.getIntExtra("level", 0);
+            Log.e(TAG, "Battery level: " + String.valueOf(level));
+
+            timer.cancel();
+            timer.purge();
+            timer = new Timer();
+
+            String resultStr = String.valueOf(level) + "\n";
+            Double wattTotal = 0d;
+            Double ampeTotal = 0d;
+
+            if (watts.size() != 0) {
+                for (int i = 0; i < watts.size(); i++) {
+                    wattTotal += watts.get(i);
+                    ampeTotal += ampes.get(i);
+                    resultStr += watts.get(i).toString() + "\t" + ampes.get(i).toString() + "\n";
+                }
+                Log.e(TAG, wattTotal + "W " + ampeTotal + "mA");
+                //CommonUtil.writeToFile(resultStr, FILE_NAME);
+                watts.clear();
+                ampes.clear();
+            }
+
+            timer.schedule(timerTask, 0, 1000);
+
+        }
+    };
 
     private void handleBtnOnclick() {
         btnGenModel.setOnClickListener(new View.OnClickListener() {
@@ -88,7 +158,7 @@ public class MainActivity extends Activity implements GenerateModelListener {
         endTimer.schedule(hourlyTask, Long.parseLong(txtTimeout.getText().toString()) * 1000);
     }
 
-    class TestCPU extends AsyncTask<Integer, String, String>{
+    class TestCPU extends AsyncTask<Integer, String, String> {
         @Override
         protected String doInBackground(Integer... params) {
             long limit = 200000000;
