@@ -15,9 +15,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import junit.framework.Test;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,11 +37,13 @@ import project.huyjack.traincpu.Listener.GenerateModelListener;
 
 public class MainActivity extends Activity implements GenerateModelListener {
     public static final String TAG = MainActivity.class.getName();
-    private static final String FILE_NAME = "data.txt";
+    private static final String FILE_NAME = "data";
+    private int COUNT_PERCENT = 30;
     private TextView txtTimeout;
     private Button btnGenModel, btnTest;
     private ArrayList<TrainData> trainingDatas = null;
     private MultipleLinearRegression regression = null;
+    private int mLevelCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +55,6 @@ public class MainActivity extends Activity implements GenerateModelListener {
         btnGenModel = (Button) findViewById(R.id.btnGenModel);
         btnTest = (Button) findViewById(R.id.btnTest);
         trainingDatas = new ArrayList<TrainData>();
-        this.registerReceiver(this.mBatteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
         handleBtnOnclick();
     }
@@ -67,9 +73,10 @@ public class MainActivity extends Activity implements GenerateModelListener {
                 handler.post(new Runnable() {
                     public void run() {
                         try {
+                            EnergyEstimator.readBatteryStatus();
                             Double watt = EnergyEstimator.getWattBattery();
                             Double ampe = EnergyEstimator.getAmpeBattery() * 1.0;
-                            Double voltage = EnergyEstimator.getVoltBattery()* 1.0;
+                            Double voltage = EnergyEstimator.getVoltBattery() * 1.0;
                             Log.e(TAG, watt + " " + ampe / 1000000 + " " + voltage / 1000000);
                             watts.add(watt);
                             ampes.add(ampe);
@@ -87,36 +94,62 @@ public class MainActivity extends Activity implements GenerateModelListener {
             int level = intent.getIntExtra("level", 0);
             Log.e(TAG, "Battery level: " + String.valueOf(level));
 
-            timer.cancel();
-            timer.purge();
-            timer = new Timer();
+            if (mLevelCount == 0) {
+                String resultStr = String.valueOf(level) + "\n";
+                Double wattTotal = 0d;
+                Double ampeTotal = 0d;
 
-            String resultStr = String.valueOf(level) + "\n";
-            Double wattTotal = 0d;
-            Double ampeTotal = 0d;
-
-            if (watts.size() != 0) {
-                for (int i = 0; i < watts.size(); i++) {
-                    wattTotal += watts.get(i);
-                    ampeTotal += ampes.get(i);
-                    resultStr += watts.get(i).toString() + "\t" + ampes.get(i).toString() + "\n";
+                if (watts.size() != 0) {
+                    for (int i = 0; i < watts.size(); i++) {
+                        wattTotal += watts.get(i);
+                        ampeTotal += ampes.get(i);
+                        resultStr += watts.get(i).toString() + "W\t" + ampes.get(i).toString() + "mA\n";
+                    }
+                    Log.e(TAG, wattTotal + "W " + ampeTotal + "mA");
+                    //resultStr += wattTotal + "W " + ampeTotal + "mA\n";
+                    //CommonUtil.write(FILE_NAME + COUNT_PERCENT + ".txt", resultStr);
+                    watts.clear();
+                    ampes.clear();
                 }
-                Log.e(TAG, wattTotal + "W " + ampeTotal + "mA");
-                //CommonUtil.writeToFile(resultStr, FILE_NAME);
-                watts.clear();
-                ampes.clear();
+
+                timer.schedule(timerTask, 0, 1000);
             }
+            else if (mLevelCount == COUNT_PERCENT){
+                timer.cancel();
+                timer.purge();
+                String resultStr = String.valueOf(level) + "\n";
+                Double wattTotal = 0d;
+                Double ampeTotal = 0d;
 
-            timer.schedule(timerTask, 0, 1000);
-
+                if (watts.size() != 0) {
+                    for (int i = 0; i < watts.size(); i++) {
+                        wattTotal += watts.get(i);
+                        ampeTotal += ampes.get(i);
+                        resultStr += watts.get(i).toString() + "W\t" + ampes.get(i).toString() + "mA\n";
+                    }
+                    Log.e(TAG, wattTotal + "W " + ampeTotal + "mA");
+                    resultStr += wattTotal + "W " + ampeTotal + "mA\n";
+                    CommonUtil.write(FILE_NAME + COUNT_PERCENT + ".txt", resultStr);
+                    watts.clear();
+                    ampes.clear();
+                }
+            }
+            mLevelCount++;
         }
     };
 
     private void handleBtnOnclick() {
+
         btnGenModel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                generateModel();
+
+                COUNT_PERCENT = Integer.parseInt(txtTimeout.getText().toString());
+                Toast.makeText(v.getContext(),"Start getting battery data!", Toast.LENGTH_LONG).show();
+
+                Log.e(TAG, COUNT_PERCENT + "%");
+                v.getContext().registerReceiver(mBatteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+                //generateModel();
             }
         });
     }

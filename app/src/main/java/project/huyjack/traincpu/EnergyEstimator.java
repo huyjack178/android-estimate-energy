@@ -3,6 +3,7 @@ package project.huyjack.traincpu;
 import android.os.Handler;
 import android.util.Log;
 
+import java.math.BigDecimal;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,28 +21,33 @@ public class EnergyEstimator {
     private Timer timer = null;
     private CPUManager cpuManager = null;
     private ScreenManager screenManager = null;
-    private BatteryManager batteryManager = null;
+    private static BatteryManager batteryManager = new BatteryManager();
     private static int current = 0;
     private static int voltage = 0;
+
     public EnergyEstimator(Timer timer) {
         this.timer = timer;
         cpuManager = new CPUManager();
         screenManager = new ScreenManager();
-        batteryManager = new BatteryManager();
-    }
-    public static void readBatteryStatus() {
-        int current = batteryManager.getBatteryCurrent();
-        int vol = batteryManager.getBatteryVoltage();
-    }
-    public static double getWattBattery(){
-        return = ((current) * (vol)) / 10e12;
     }
 
-    public static int getAmpeBattery(){
+    public static void readBatteryStatus() {
+        current = batteryManager.getBatteryCurrent();
+        voltage = batteryManager.getBatteryVoltage();
+    }
+
+    public static double getWattBattery() {
+        BigDecimal watt = new BigDecimal(current).multiply(new BigDecimal(voltage));
+        watt = watt.divide(new BigDecimal(Math.pow(10, 12)));
+        Log.e(TAG, current + " " + voltage + " " + watt);
+        return watt.doubleValue();
+    }
+
+    public static int getAmpeBattery() {
         return current;
     }
 
-    public static int getVoltBattery(){
+    public static int getVoltBattery() {
         return voltage;
     }
 

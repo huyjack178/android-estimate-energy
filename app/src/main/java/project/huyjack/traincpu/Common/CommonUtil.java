@@ -1,15 +1,21 @@
 package project.huyjack.traincpu.Common;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
+import java.io.Writer;
 import java.util.ArrayList;
 
 /**
@@ -50,12 +56,36 @@ public class CommonUtil {
         return true;
     }
 
+    public static void write(String fileName, String data) {
+        Writer writer;
+        File outDir = new File("sdcard" + File.separator);
+        if (!outDir.isDirectory()) {
+            outDir.mkdir();
+        }
+        try {
+            if (!outDir.isDirectory()) {
+                throw new IOException(
+                        "Unable to create directory EZ_time_tracker. Maybe the SD card is mounted?");
+            }
+            File outputFile = new File(outDir, fileName);
+            writer = new BufferedWriter(new FileWriter(outputFile));
+            Log.e(TAG, outputFile.getAbsolutePath());
+            writer.write(data);
+            writer.close();
+
+        } catch (IOException e) {
+            Log.w("eztt", e.getMessage(), e);
+        }
+
+    }
+
     public static void writeToFile(String data, String fileName) {
         try {
 
-            File myDir = new File("storage/");
-            myDir.mkdirs();
-            FileWriter out = new FileWriter(new File(myDir, fileName), true);
+
+            File myDir = new File("storage/", fileName);
+            myDir.mkdir();
+            FileWriter out = new FileWriter(myDir, true);
 
             out.write(data);
 
