@@ -79,32 +79,14 @@ public class CommonUtil {
 
     }
 
-    public static void writeToFile(String data, String fileName) {
+    public static String readFromFile(String fileName) {
+        String ret = "";
         try {
-
-
-            File myDir = new File("storage/", fileName);
-            myDir.mkdir();
-            FileWriter out = new FileWriter(myDir, true);
-
-            out.write(data);
-
-            out.close();
-        } catch (IOException e) {
-            Log.e(TAG, "File write failed: " + e.toString());
-        }
-    }
-
-    public ArrayList<String> readFromFile(String fileName) {
-        ArrayList<String> ret = new ArrayList<String>();
-        try {
-            File sdcard = Environment.getExternalStorageDirectory();
-            File file = new File("storage/sdcard1/" + fileName);
-
+            File file = new File("sdcard/" + fileName);
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             while ((line = br.readLine()) != null) {
-                ret.add(line + "\n");
+                ret += line + "\n";
             }
             br.close();
         } catch (IOException e) {

@@ -39,7 +39,7 @@ public class EnergyEstimator {
     public static double getWattBattery() {
         BigDecimal watt = new BigDecimal(current).multiply(new BigDecimal(voltage));
         watt = watt.divide(new BigDecimal(Math.pow(10, 12)));
-        Log.e(TAG, current + " " + voltage + " " + watt);
+        //Log.e(TAG, current + " " + voltage + " " + watt);
         return watt.doubleValue();
     }
 
