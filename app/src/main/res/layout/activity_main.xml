@@ -10,20 +10,17 @@
         android:layout_height="wrap_content"
         android:text="Generate Model"
         android:id="@+id/btnGenModel"
+        android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="121dp"
-        android:layout_centerInParent="true"
-        />
+        android:layout_marginTop="59dp" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Test"
         android:id="@+id/btnTest"
-        android:layout_alignBottom="@+id/btnGenModel"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="65dp"
-        />
+        android:layout_below="@+id/btnGenModel"
+        android:layout_centerHorizontal="true" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -32,11 +29,10 @@
         android:ems="10"
         android:id="@+id/txtTimeout"
         android:textSize="30dp"
-        android:layout_marginBottom="30dp"
         android:width="250dp"
-        android:layout_above="@+id/btnTest"
-        android:layout_centerInParent="true"
-        android:text="100" />
+        android:text="100"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -44,7 +40,37 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Time Out"
         android:id="@+id/textView"
-        android:layout_above="@+id/txtTimeout"
-        android:layout_centerHorizontal="true"
-        android:textSize="20dp" />
+        android:textSize="20dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="COLLECT DATA"
+        android:id="@+id/btnCollect"
+        android:layout_below="@+id/btnTest"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Percent"
+        android:id="@+id/textView2"
+        android:textSize="20dp"
+        android:layout_below="@+id/txtTimeout"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/txtPercent"
+        android:textSize="30dp"
+        android:width="250dp"
+        android:text="100"
+        android:layout_below="@+id/textView2"
+        android:layout_alignStart="@+id/txtTimeout" />
 </RelativeLayout>
