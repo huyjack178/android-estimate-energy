@@ -129,12 +129,15 @@ public class DataCollector {
         @Override
         public void onReceive(Context context, Intent intent) {
             int level = intent.getIntExtra(LEVEL, 0);
+            int temp = intent.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, 0) / 10;
+
             Log.e(TAG, "Battery level: " + String.valueOf(level));
 
             Double wattTotal = 0d;
             Double ampeTotal = 0d;
             Double voltTotal = 0d;
-            String resultStr = String.valueOf(level) + "\n";
+            String resultStr = "";
+            resultStr += String.valueOf(level) + " " + mPercent + "\n";
 
             if (mPercentCount == 0)
                 timer.schedule(timerTask, 0, 1000);
@@ -152,8 +155,12 @@ public class DataCollector {
                     }
                     Log.e(TAG, wattTotal + "W " + ampeTotal + "µA " + voltTotal + "µV");
                     resultStr += wattTotal + "W " + ampeTotal + "µA " + voltTotal + "µV\n";
+                    resultStr += ampeTotal / watts.size() + "µA " + watts.size() + "seconds " + temp + " *C\n";
                     String fileStr = CommonUtil.readFromFile(FILE_NAME + mPercent + FILE_EXTENSION);
                     CommonUtil.write(FILE_NAME + mPercent + FILE_EXTENSION, fileStr + resultStr);
+                    watts.clear();
+                    ampes.clear();
+                    volts.clear();
                 }
             } else {
                 if (watts.size() != 0) {
@@ -167,13 +174,11 @@ public class DataCollector {
                     }
                     Log.e(TAG, wattTotal + "W " + ampeTotal + "µA " + voltTotal + "V");
                     resultStr += wattTotal + "W " + ampeTotal + "µA " + voltTotal + "µV\n";
-                    String fileStr = CommonUtil.readFromFile(FILE_NAME + mPercent + FILE_EXTENSION);
-                    CommonUtil.write(FILE_NAME + mPercent + FILE_EXTENSION, fileStr + resultStr);
+//                    String fileStr = CommonUtil.readFromFile(FILE_NAME + mPercent + FILE_EXTENSION);
+                    CommonUtil.write(FILE_NAME + mPercent + FILE_EXTENSION, resultStr);
                 }
             }
-            watts.clear();
-            ampes.clear();
-            volts.clear();
+            ;
             mPercentCount++;
         }
     };

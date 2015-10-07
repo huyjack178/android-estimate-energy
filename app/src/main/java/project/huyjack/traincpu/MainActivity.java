@@ -61,7 +61,7 @@ public class MainActivity extends Activity implements GenerateModelListener {
                 int percent = Integer.parseInt(txtPercent.getText().toString());
                 DataCollector dataCollector = new DataCollector(v.getContext(), percent);
                 int timeOut = Integer.parseInt(txtTimeout.getText().toString());
-                dataCollector.startCollectDataByTimeout(timeOut);
+                dataCollector.startCollectDataByPercent();
             }
         });
     }
