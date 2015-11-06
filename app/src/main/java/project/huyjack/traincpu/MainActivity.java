@@ -1,12 +1,16 @@
 package project.huyjack.traincpu;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -24,7 +28,7 @@ public class MainActivity extends Activity implements GenerateModelListener {
     public static final String TAG = MainActivity.class.getName();
     private static final String FILE_NAME = "data";
 
-    private TextView txtTimeout, txtPercent;
+    private TextView txtTimeout, txtPercent, txtStartPercent;
     private Button btnGenModel, btnCollect;
     private ArrayList<TrainData> trainingDatas = null;
     private MultipleLinearRegression regression = null;
@@ -39,6 +43,7 @@ public class MainActivity extends Activity implements GenerateModelListener {
         btnGenModel = (Button) findViewById(R.id.btnGenModel);
 
         txtPercent = (EditText) findViewById(R.id.txtPercent);
+        txtStartPercent = (EditText) findViewById(R.id.txtStartPercent);
         btnCollect = (Button) findViewById(R.id.btnCollect);
         trainingDatas = new ArrayList<TrainData>();
         handleBtnOnclick();
@@ -59,62 +64,51 @@ public class MainActivity extends Activity implements GenerateModelListener {
             public void onClick(View v) {
                 Toast.makeText(v.getContext(), "Start collecting data!", Toast.LENGTH_LONG).show();
                 int percent = Integer.parseInt(txtPercent.getText().toString());
-                DataCollector dataCollector = new DataCollector(v.getContext(), percent);
+                int startPercent = Integer.parseInt(txtStartPercent.getText().toString());
+                DataCollector dataCollector = new DataCollector(v.getContext(), percent, startPercent);
                 int timeOut = Integer.parseInt(txtTimeout.getText().toString());
-                dataCollector.startCollectDataByPercent();
+                dataCollector.startCollectData(timeOut, getWindow(), getApplicationContext());
             }
         });
     }
 
     private void generateModel() {
-        final Timer startTimer = new Timer();
-        EnergyEstimator estimator = new EnergyEstimator(startTimer);
-        estimator.runTrainingData(MainActivity.this);
-
-        TestCPU testCPU = new TestCPU();
-        testCPU.execute(0);
-
-        final Timer endTimer = new Timer();
-        TimerTask hourlyTask = new TimerTask() {
-            @Override
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        //Generate Model
-                        TrainData data = new TrainData(trainingDatas.size(), 3);
-                        for (int i = 0; i < trainingDatas.size(); i++) {
-                            data.component[i][0] = 1;
-                            data.component[i][1] = trainingDatas.get(i).getFrequency();
-                            data.component[i][2] = trainingDatas.get(i).getCPUUsage();
-                            data.power[i] = trainingDatas.get(i).getPower();
-                        }
-                        regression = new MultipleLinearRegression(data.component, data.power);
-                        Log.e(TAG, regression.beta(0) + "," + regression.beta(1) + ","
-                                + regression.beta(2));
-                        startTimer.cancel();
-                        startTimer.purge();
-                        endTimer.cancel();
-                        endTimer.purge();
-                    }
-                });
-            }
-
-        };
-        endTimer.schedule(hourlyTask, Long.parseLong(txtTimeout.getText().toString()) * 1000);
+//        final Timer startTimer = new Timer();
+//        EnergyEstimator estimator = new EnergyEstimator(startTimer);
+//        estimator.runTrainingData(MainActivity.this);
+//
+//        TestCPU testCPU = new TestCPU();
+//        testCPU.execute(0);
+//
+//        final Timer endTimer = new Timer();
+//        TimerTask hourlyTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                runOnUiThread(new Runnable() {
+//                    public void run() {
+//                        //Generate Model
+//                        TrainData data = new TrainData(trainingDatas.size(), 3);
+//                        for (int i = 0; i < trainingDatas.size(); i++) {
+//                            data.component[i][0] = 1;
+//                            data.component[i][1] = trainingDatas.get(i).getFrequency();
+//                            data.component[i][2] = trainingDatas.get(i).getCPUUsage();
+//                            data.power[i] = trainingDatas.get(i).getPower();
+//                        }
+//                        regression = new MultipleLinearRegression(data.component, data.power);
+//                        Log.e(TAG, regression.beta(0) + "," + regression.beta(1) + ","
+//                                + regression.beta(2));
+//                        startTimer.cancel();
+//                        startTimer.purge();
+//                        endTimer.cancel();
+//                        endTimer.purge();
+//                    }
+//                });
+//            }
+//
+//        };
+//        endTimer.schedule(hourlyTask, Long.parseLong(txtTimeout.getText().toString()) * 1000);
+//        WindowManager.LayoutParams params = getWindow().getAttributes();
     }
-
-    class TestCPU extends AsyncTask<Integer, String, String> {
-        @Override
-        protected String doInBackground(Integer... params) {
-            long limit = 200000000;
-            double sum = 0;
-            for (long m = 1; m < limit; m++) {
-                sum = (double) (1 / m);
-            }
-            return null;
-        }
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -144,5 +138,17 @@ public class MainActivity extends Activity implements GenerateModelListener {
         Log.e(TAG, trainingData.getFrequency() + "");
         Log.e(TAG, trainingDatas.size() + "");
 
+    }
+
+    class TestCPU extends AsyncTask<Integer, String, String> {
+        @Override
+        protected String doInBackground(Integer... params) {
+            long limit = 200000000;
+            double sum = 0;
+            for (long m = 1; m < limit; m++) {
+                sum = (double) (1 / m);
+            }
+            return null;
+        }
     }
 }

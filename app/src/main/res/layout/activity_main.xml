@@ -10,9 +10,9 @@
         android:layout_height="wrap_content"
         android:text="Generate Model"
         android:id="@+id/btnGenModel"
-        android:layout_below="@+id/textView2"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="59dp" />
+        android:layout_marginTop="92dp"
+        android:layout_below="@+id/txtPercent"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
@@ -73,4 +73,26 @@
         android:text="100"
         android:layout_below="@+id/textView2"
         android:layout_alignStart="@+id/txtTimeout" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/txtStartPercent"
+        android:textSize="30dp"
+        android:width="250dp"
+        android:text="100"
+        android:layout_below="@+id/textView3"
+        android:layout_alignLeft="@+id/txtPercent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Start percent"
+        android:id="@+id/textView3"
+        android:textSize="20dp"
+        android:layout_below="@+id/txtPercent"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
