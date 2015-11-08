@@ -1,27 +1,23 @@
 package project.huyjack.traincpu;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import project.huyjack.traincpu.Listener.GenerateModelListener;
-import project.huyjack.traincpu.Test.DataCollector;
+import project.huyjack.traincpu.test.DataCollector;
 
 
 public class MainActivity extends Activity implements GenerateModelListener {
@@ -65,9 +61,9 @@ public class MainActivity extends Activity implements GenerateModelListener {
                 Toast.makeText(v.getContext(), "Start collecting data!", Toast.LENGTH_LONG).show();
                 int percent = Integer.parseInt(txtPercent.getText().toString());
                 int startPercent = Integer.parseInt(txtStartPercent.getText().toString());
-                DataCollector dataCollector = new DataCollector(v.getContext(), percent, startPercent);
+                DataCollector dataCollector = new DataCollector();
                 int timeOut = Integer.parseInt(txtTimeout.getText().toString());
-                dataCollector.startCollectData(timeOut, getWindow(), getApplicationContext());
+                dataCollector.startCollectData(timeOut, getApplicationContext());
             }
         });
     }

@@ -1,9 +1,11 @@
-package project.huyjack.traincpu.Test;
+package project.huyjack.traincpu.test;
 
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.Window;
@@ -31,11 +33,11 @@ public class DataCollector {
     private static final String LEVEL = "level";
 
 
-    private final int mPercent;
-    private final int mStartPercent;
+    private final int mPercent = 0;
+    private final int mStartPercent = 0;
 
     private long mCurrentTime = 0;
-    private Context mContext;
+    private Context mContext = null;
     private int mPercentCount = -1;
     private BroadcastReceiver mBatteryReceiver = new BroadcastReceiver() {
         final android.os.Handler handler = new android.os.Handler();
@@ -134,20 +136,27 @@ public class DataCollector {
 
     };
 
-
-    public DataCollector(Context context, int percent, int startPercent) {
-        this.mContext = context;
-        this.mPercent = percent;
-        this.mStartPercent = startPercent;
+    public DataCollector() {
     }
 
-    public void startCollectData(final int timeOut, final Window window, final Context context) {
+//    public DataCollector(Context context, int percent, int startPercent) {
+//        this.mContext = context;
+//        this.mPercent = percent;
+//        this.mStartPercent = startPercent;
+//    }
+
+    public void startCollectData(final int timeOut, final Context context) {
         final android.os.Handler handler = new android.os.Handler();
         final List<Double> watts = new LinkedList<Double>();
         final List<Double> ampes = new LinkedList<Double>();
         final List<Double> volts = new LinkedList<Double>();
         final BatteryManager batteryManager = new BatteryManager();
         final int startLevel = batteryManager.getBatteryLevel();
+
+        final long startTime = System.currentTimeMillis() / 1000;
+        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        final PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
+        final PowerManager.WakeLock partialWl = pm.newWakeLock((PowerManager.PARTIAL_WAKE_LOCK), "TAG");
 
         final Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
@@ -156,16 +165,14 @@ public class DataCollector {
                 handler.post(new Runnable() {
                     public void run() {
                         try {
+                            long runTime = System.currentTimeMillis() / 1000 - startTime;
                             Double wattTotal = 0d;
                             Double ampeTotal = 0d;
                             Double voltTotal = 0d;
-                            WindowManager.LayoutParams params = window.getAttributes();
-                            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                            PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "TAG");
-
                             String resultStr = "";
-                            if (watts.size() == timeOut) {
 
+                            if (watts.size() == timeOut) {
+                                wakeLock.acquire();
                                 timer.cancel();
                                 timer.purge();
                                 for (int i = 0; i < watts.size(); i++) {
@@ -185,10 +192,15 @@ public class DataCollector {
                                 CommonUtil.write(FILE_NAME + timeOut + FILE_EXTENSION, fileStr + resultStr);
                             } else {
                                 if (watts.size() % 10 == 0) {
+                                    partialWl.acquire();
                                     ScreenManager.turnScreenOff(context);
-                                } else if (watts.size() % 10 == 5)
+                                    if (wakeLock.isHeld())
+                                        wakeLock.release();
+                                } else if (watts.size() % 10 == 3) {
+                                    if (partialWl.isHeld())
+                                        partialWl.release();
                                     wakeLock.acquire();
-
+                                }
                                 EnergyEstimator.readBatteryStatus();
                                 Double watt = EnergyEstimator.getWattBattery();
                                 Double ampe = EnergyEstimator.getAmpeBattery() * 1.0;
