@@ -1,4 +1,4 @@
-package project.huyjack.traincpu.Manager;
+package project.huyjack.traincpu.manager;
 
 import android.util.Log;
 
@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Random;
 
-import project.huyjack.traincpu.Common.CommonUtil;
+import project.huyjack.traincpu.common.CommonUtil;
 
 /**
  * Created by AnhHuy on 5/19/2015.

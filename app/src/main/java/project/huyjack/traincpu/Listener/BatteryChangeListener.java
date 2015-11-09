@@ -1,6 +1,4 @@
-package project.huyjack.traincpu.Listener;
-
-import java.util.ArrayList;
+package project.huyjack.traincpu.listener;
 
 /**
  * Created by huyjack on 9/12/15.

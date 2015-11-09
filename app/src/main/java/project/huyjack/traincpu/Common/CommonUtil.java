@@ -1,22 +1,16 @@
-package project.huyjack.traincpu.Common;
+package project.huyjack.traincpu.common;
 
-import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
-import java.util.ArrayList;
 
 /**
  * Created by AnhHuy on 5/19/2015.

@@ -1,10 +1,8 @@
-package project.huyjack.traincpu.Manager;
+package project.huyjack.traincpu.manager;
 
-import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Window;

@@ -46,11 +46,16 @@
             </intent-filter>
         </receiver>
 
-        <!--<service-->
-            <!--android:name=".test.DataCollector"-->
-            <!--android:enabled="true"-->
-            <!--android:exported="true" >-->
-        <!--</service>-->
+        <!-- <service -->
+        <!-- android:name=".test.DataCollector" -->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="true" > -->
+        <!-- </service> -->
+        <service
+            android:name=".test.DataCollectorService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>

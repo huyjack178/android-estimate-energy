@@ -13,11 +13,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
-import project.huyjack.traincpu.Listener.GenerateModelListener;
+import project.huyjack.traincpu.listener.GenerateModelListener;
 import project.huyjack.traincpu.test.DataCollector;
+import project.huyjack.traincpu.test.DataCollectorService;
 
 
 public class MainActivity extends Activity implements GenerateModelListener {
@@ -61,9 +61,12 @@ public class MainActivity extends Activity implements GenerateModelListener {
                 Toast.makeText(v.getContext(), "Start collecting data!", Toast.LENGTH_LONG).show();
                 int percent = Integer.parseInt(txtPercent.getText().toString());
                 int startPercent = Integer.parseInt(txtStartPercent.getText().toString());
-                DataCollector dataCollector = new DataCollector();
+//                DataCollector dataCollector = new DataCollector();
                 int timeOut = Integer.parseInt(txtTimeout.getText().toString());
-                dataCollector.startCollectData(timeOut, getApplicationContext());
+//                dataCollector.startCollectData(timeOut, getApplicationContext());
+                Intent intent = new Intent(MainActivity.this, DataCollectorService.class);
+                intent.putExtra("timeOut", timeOut);
+                startService(intent);
             }
         });
     }

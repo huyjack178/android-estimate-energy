@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import project.huyjack.traincpu.Common.CommonUtil;
-import project.huyjack.traincpu.Listener.GenerateModelListener;
-import project.huyjack.traincpu.Manager.BatteryManager;
-import project.huyjack.traincpu.Manager.CPUManager;
-import project.huyjack.traincpu.Manager.ScreenManager;
+import project.huyjack.traincpu.common.CommonUtil;
+import project.huyjack.traincpu.listener.GenerateModelListener;
+import project.huyjack.traincpu.manager.BatteryManager;
+import project.huyjack.traincpu.manager.CPUManager;
+import project.huyjack.traincpu.manager.ScreenManager;
 
 /**
  * Created by AnhHuy on 5/19/2015.

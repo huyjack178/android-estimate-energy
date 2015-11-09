@@ -4,7 +4,7 @@ import android.content.Context;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 
-import project.huyjack.traincpu.Manager.ScreenManager;
+import project.huyjack.traincpu.manager.ScreenManager;
 
 /**
  * Listener class which detects phone state changes and locks the device when a

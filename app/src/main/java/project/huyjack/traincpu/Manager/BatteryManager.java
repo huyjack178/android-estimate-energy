@@ -1,8 +1,8 @@
-package project.huyjack.traincpu.Manager;
+package project.huyjack.traincpu.manager;
 
 import android.content.Context;
 
-import project.huyjack.traincpu.Common.CommonUtil;
+import project.huyjack.traincpu.common.CommonUtil;
 
 /**
  * Created by AnhHuy on 5/19/2015.

@@ -1,4 +1,4 @@
-package project.huyjack.traincpu.Listener;
+package project.huyjack.traincpu.listener;
 
 import project.huyjack.traincpu.TrainData;
 
