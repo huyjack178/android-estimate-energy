@@ -8,4 +8,8 @@
     <string name="device_admin_description">Turns the screen off and locks your device with a single touch.</string>
     <string name="admin_receiver_status_enabled">Screen Off was added as Device Administrator</string>
     <string name="admin_receiver_status_disabled">Screen Off was removed from Device Administrators list</string>
+    <string name="local_service_started">Start collect data</string>
+    <string name="local_service_stopped">Stop collect data</string>
+    <string name="local_service_connected">Connect collect data</string>
+    <string name="local_service_disconnected">Disconnect collect data</string>
 </resources>

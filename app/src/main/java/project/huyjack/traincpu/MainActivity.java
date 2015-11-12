@@ -1,9 +1,16 @@
 package project.huyjack.traincpu;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +25,7 @@ import java.util.ArrayList;
 import project.huyjack.traincpu.listener.GenerateModelListener;
 import project.huyjack.traincpu.test.DataCollector;
 import project.huyjack.traincpu.test.DataCollectorService;
+import project.huyjack.traincpu.test.DataCollectorServiceIntent;
 
 
 public class MainActivity extends Activity implements GenerateModelListener {
@@ -28,6 +36,22 @@ public class MainActivity extends Activity implements GenerateModelListener {
     private Button btnGenModel, btnCollect;
     private ArrayList<TrainData> trainingDatas = null;
     private MultipleLinearRegression regression = null;
+    private DataCollectorService mService;
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mService = ((DataCollectorService.LocalBinder)service).getService();
+            Toast.makeText(MainActivity.this, R.string.local_service_connected,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mService = null;
+            Toast.makeText(MainActivity.this, R.string.local_service_disconnected,
+                    Toast.LENGTH_SHORT).show();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +85,14 @@ public class MainActivity extends Activity implements GenerateModelListener {
                 Toast.makeText(v.getContext(), "Start collecting data!", Toast.LENGTH_LONG).show();
                 int percent = Integer.parseInt(txtPercent.getText().toString());
                 int startPercent = Integer.parseInt(txtStartPercent.getText().toString());
-//                DataCollector dataCollector = new DataCollector();
+                DataCollector dataCollector = new DataCollector();
                 int timeOut = Integer.parseInt(txtTimeout.getText().toString());
 //                dataCollector.startCollectData(timeOut, getApplicationContext());
                 Intent intent = new Intent(MainActivity.this, DataCollectorService.class);
+                bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
                 intent.putExtra("timeOut", timeOut);
                 startService(intent);
+
             }
         });
     }

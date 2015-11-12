@@ -19,7 +19,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -54,7 +55,12 @@
         <service
             android:name=".test.DataCollectorService"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true"
+           >
+        </service>
+        <service
+            android:name=".test.DataCollectorServiceIntent"
+            android:exported="false" >
         </service>
     </application>
 
