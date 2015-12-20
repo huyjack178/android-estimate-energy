@@ -42,27 +42,6 @@ public class ScreenManager {
         window.setAttributes(layoutParams);
     }
 
-//    private void turnScreenOffAndExit() {
-//        // first lock screen
-//        turnScreenOff(getApplicationContext());
-//
-//        // then provide feedback
-//        ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(50);
-//
-//        // schedule end of activity
-//        final Activity activity = this;
-//        Thread t = new Thread() {
-//            public void run() {
-//                try {
-//                    sleep(500);
-//                } catch (InterruptedException e) {
-//					/* ignore this */
-//                }
-//                activity.finish();
-//            }
-//        };
-//        t.start();
-//    }
     /**
      * Turns the screen off and locks the device, provided that proper rights
      * are given.

@@ -7,7 +7,16 @@ public class TrainData
 {
     private double Frequency;
     private int CPUUsage;
+    private int ScreenBright;
     private double Power;
+
+    public int getScreenBright() {
+        return ScreenBright;
+    }
+
+    public void setScreenBright(int screenBright) {
+        ScreenBright = screenBright;
+    }
 
     public double getFrequency() {
         return Frequency;

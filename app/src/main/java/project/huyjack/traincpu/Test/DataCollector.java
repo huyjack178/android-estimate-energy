@@ -143,6 +143,7 @@ public class DataCollector {
         final List<Double> watts = new LinkedList<Double>();
         final List<Double> ampes = new LinkedList<Double>();
         final List<Double> volts = new LinkedList<Double>();
+        final List<Integer> levels = new LinkedList<Integer>();
 
         //Wake lock
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -157,9 +158,9 @@ public class DataCollector {
         final long startTime = System.currentTimeMillis() / 1000;
         final String fileName =
                 FILE_NAME + FILE_SEP
-                + timeOut + FILE_SEP
-                + startLevel + FILE_SEP
-                + startTime + FILE_EXTENSION;
+                        + timeOut + FILE_SEP
+                        + startLevel + FILE_SEP
+                        + startTime + FILE_EXTENSION;
 
         final android.os.Handler handler = new android.os.Handler();
         final Timer timer = new Timer();
@@ -181,7 +182,8 @@ public class DataCollector {
                                     wattTotal += watts.get(i);
                                     ampeTotal += ampes.get(i);
                                     voltTotal += volts.get(i);
-                                    resultStr += watts.get(i).toString() + "W "
+                                    resultStr += levels.get(i).toString() + "% "
+                                            + watts.get(i).toString() + "W "
                                             + ampes.get(i).toString() + "µA "
                                             + volts.get(i).toString() + "µV\n";
                                 }
@@ -194,21 +196,25 @@ public class DataCollector {
                                 wakeLock.acquire();
                                 r.play();
                             } else {
-                                if (watts.size() % 10 == 1) {
-                                    partialWl.acquire();
-                                    ScreenManager.turnScreenOff(context);
-                                    if (wakeLock.isHeld())
-                                        wakeLock.release();
-                                } else if (watts.size() % 10 == 5) {
-                                    if (partialWl.isHeld())
-                                        partialWl.release();
-                                    wakeLock.acquire();
-                                }
+//                                if (watts.size() % 10 == 1) {
+//                                    partialWl.acquire();
+//                                    ScreenManager.turnScreenOff(context);
+//                                    if (wakeLock.isHeld())
+//                                        wakeLock.release();
+//                                } else if (watts.size() % 10 == 5) {
+//                                    if (partialWl.isHeld())
+//                                        partialWl.release();
+//                                    wakeLock.acquire();
+//                                }
+                                partialWl.acquire();
+                                ScreenManager.turnScreenOff(context);
+
                                 EnergyEstimator.readBatteryStatus();
                                 Double watt = EnergyEstimator.getWattBattery();
                                 Double ampe = EnergyEstimator.getAmpeBattery() * 1.0;
                                 Double voltage = EnergyEstimator.getVoltBattery() * 1.0;
                                 Log.e(TAG, watt + " " + ampe / 1000000 + " " + voltage / 1000000);
+                                levels.add(batteryManager.getBatteryLevel());
                                 watts.add(watt);
                                 ampes.add(ampe);
                                 volts.add(voltage);

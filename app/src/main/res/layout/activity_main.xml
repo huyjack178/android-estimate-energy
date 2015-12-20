@@ -95,4 +95,12 @@
         android:textSize="20dp"
         android:layout_below="@+id/txtPercent"
         android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="STOP SERVIce"
+        android:id="@+id/btnStop"
+        android:layout_below="@+id/btnCollect"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

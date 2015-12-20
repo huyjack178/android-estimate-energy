@@ -24,24 +24,25 @@ public class DataCollectorService extends Service {
     private final IBinder mBinder = new LocalBinder();
     private NotificationManager mNM;
     private int NOTIFICATION = 1;
-    private int mTimeout = 600;
+    private int mTimeout = 0;
 
     @Override
     public void onCreate() {
         mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         showNotification();
-
         super.onCreate();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "Received start id " + startId + ": " + intent);
-        mTimeout = intent.getIntExtra("timeOut", 600);
+        mTimeout = intent.getIntExtra("timeOut", 0);
         DataCollector dataCollector = new DataCollector();
         dataCollector.startCollectData(mTimeout, this);
         return START_STICKY;
     }
+
+
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
@@ -59,7 +60,7 @@ public class DataCollectorService extends Service {
         AlarmManager alarmService = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
         alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 100, restartServicePI);
 
-        
+
     }
 
     @Override

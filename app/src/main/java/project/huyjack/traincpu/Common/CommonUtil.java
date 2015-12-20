@@ -11,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by AnhHuy on 5/19/2015.
@@ -94,5 +96,77 @@ public class CommonUtil {
     public void deleteFile() {
         File file = new File("storage/sdcard1/data.txt");
         boolean deleted = file.delete();
+    }
+
+
+    public Double calculateTotalWattFromFile(String fileName) {
+        List<String> arrInput = new LinkedList<String>();
+        try {
+            File file = new File(fileName);
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = br.readLine()) != null) {
+                arrInput.add(line);
+            }
+            if (arrInput.size() == 0) {
+                return null;
+            }
+            arrInput.remove(arrInput.size()-1);
+            arrInput.remove(arrInput.size()-1);
+            br.close();
+        } catch (IOException e) {
+            // e.printStackTrace();
+        } catch (IndexOutOfBoundsException ie) {
+
+        }
+        Double totalWatt = 0d;
+
+        LinkedList<Double> wattsList = new LinkedList<Double>();
+        LinkedList<Double> ampesList = new LinkedList<Double>();
+        LinkedList<Double> voltList = new LinkedList<Double>();
+
+        for (String element : arrInput) {
+            char[] arrChar = new char[50];
+            char[] arrElement = element.toCharArray();
+            int indexArrChar = 0;
+            int indexArrElement = 0;
+            for (char c : arrElement) {
+                int val = c - '0';
+                if ((val >= 0 && val < 10) || c == '.' || c == 'E') {
+                    arrChar[indexArrChar] = c;
+                    indexArrChar++;
+                }
+                if (c == 'W') {
+                    wattsList.add(Double.parseDouble(String.valueOf(arrChar)));
+                    arrChar = new char[50];
+                }
+                if (c == 'µ') {
+                    if (arrElement[indexArrElement+1]=='A') {
+                        ampesList.add(Double.parseDouble(String.valueOf(arrChar)));
+                    }
+                    else if (arrElement[indexArrElement+1]=='V') {
+                        voltList.add(Double.parseDouble(String.valueOf(arrChar)));
+                    }
+                    arrChar = new char[50];
+                }
+                if (c == '%') {
+                    arrChar = new char[50];
+                }
+                indexArrElement++;
+            }
+        }
+        Double max = Double.MIN_VALUE;
+        Double sumOfAmpe = 0d;
+        for (int i = 0 ; i < ampesList.size() ; i++) {
+            max = Math.max(voltList.get(i), max);
+            sumOfAmpe += ampesList.get(i);
+            if (i % 10 == 9) {
+                totalWatt += max * sumOfAmpe;
+                max = Double.MIN_VALUE;
+                sumOfAmpe = 0d;
+            }
+        }
+
+        return totalWatt;
     }
 }
